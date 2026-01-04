@@ -1,0 +1,26 @@
+{
+  "name": "Readi.fr",
+  "short_name": "Readi",
+  "description": "Réparation traceurs, imprimante, création site web, dépannage électronique, affichage dynamique",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/assets/images/readi27-140x43.png",
+      "sizes": "140x43",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/images/readi27-140x43.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/images/readi27-140x43.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: readi-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - NODE_ENV=production
+    volumes:
+      # C'est ici que la magie opère : on persiste le dossier prisma (où se trouve la db)
+      # Assurez-vous de créer ce volume ou dossier sur votre serveur Dokploy si nécessaire, 
+      # ou laissez Docker le gérer automatiquement.
+      - db_data:/app/prisma
+      # On persiste aussi les uploads si vous gérez des images dynamiques plus tard
+      - public_uploads:/app/public/uploads
+
+volumes:
+  db_data:
+  public_uploads:
