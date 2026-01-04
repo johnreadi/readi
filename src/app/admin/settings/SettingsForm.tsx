@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsForm({ user }: { user: any }) {
@@ -11,7 +11,37 @@ export default function SettingsForm({ user }: { user: any }) {
     password: '',
     confirmPassword: '',
   });
+
+  const [mailSettings, setMailSettings] = useState({
+    inboundForwardEmail: '',
+    outboundFromName: '',
+    outboundFromEmail: '',
+  });
+
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setMailSettings({
+          inboundForwardEmail: data?.inboundForwardEmail || '',
+          outboundFromName: data?.outboundFromName || '',
+          outboundFromEmail: data?.outboundFromEmail || '',
+        });
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,17 +53,29 @@ export default function SettingsForm({ user }: { user: any }) {
     }
 
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password || undefined,
+      const [profileRes, settingsRes] = await Promise.all([
+        fetch(`/api/users/${user.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            password: formData.password || undefined,
+          }),
         }),
-      });
+        fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inboundForwardEmail: mailSettings.inboundForwardEmail || null,
+            outboundFromName: mailSettings.outboundFromName || null,
+            outboundFromEmail: mailSettings.outboundFromEmail || null,
+          }),
+        }),
+      ]);
 
-      if (!res.ok) throw new Error('Erreur lors de la mise à jour');
+      if (!profileRes.ok) throw new Error('Erreur lors de la mise à jour du profil');
+      if (!settingsRes.ok) throw new Error('Erreur lors de la mise à jour des paramètres');
 
       setMessage({ type: 'success', text: 'Profil mis à jour avec succès' });
       router.refresh();
@@ -99,6 +141,43 @@ export default function SettingsForm({ user }: { user: any }) {
             value={formData.confirmPassword}
             onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
             style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem' }}
+          />
+        </div>
+      </div>
+
+      <div style={{ borderTop: '1px solid #e5e7eb', margin: '2rem 0', paddingTop: '2rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Paramètres de messagerie</h3>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email de copie (messages reçus)</label>
+          <input
+            type="email"
+            value={mailSettings.inboundForwardEmail}
+            onChange={e => setMailSettings({ ...mailSettings, inboundForwardEmail: e.target.value })}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem' }}
+            placeholder="ex: contact@readi.fr"
+          />
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Nom expéditeur (messages sortants)</label>
+          <input
+            type="text"
+            value={mailSettings.outboundFromName}
+            onChange={e => setMailSettings({ ...mailSettings, outboundFromName: e.target.value })}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem' }}
+            placeholder="Readi"
+          />
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Email expéditeur (messages sortants)</label>
+          <input
+            type="email"
+            value={mailSettings.outboundFromEmail}
+            onChange={e => setMailSettings({ ...mailSettings, outboundFromEmail: e.target.value })}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '0.375rem' }}
+            placeholder="ex: no-reply@readi.fr"
           />
         </div>
       </div>

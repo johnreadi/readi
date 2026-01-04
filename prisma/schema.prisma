@@ -7,6 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  RECEIVED
+  DRAFT
+  SENT
+  FAILED
+}
+
 model Page {
   id        String   @id @default(uuid())
   slug      String   @unique
@@ -49,7 +61,23 @@ model Message {
   name      String
   email     String
   phone     String?
+  subject   String?
   message   String
   read      Boolean  @default(false)
+  direction MessageDirection @default(INBOUND)
+  status    MessageStatus    @default(RECEIVED)
+  toName    String?
+  toEmail   String?
+  sentAt    DateTime?
+  error     String?
   createdAt DateTime @default(now())
+}
+
+model Setting {
+  id                 Int      @id @default(autoincrement())
+  inboundForwardEmail String?
+  outboundFromName    String?
+  outboundFromEmail   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
