@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import AuthProvider from "@/components/AuthProvider";
 import InstallPrompt from "@/components/InstallPrompt";
 import MobileNav from "@/components/MobileNav";
+import ServiceWorkerCleaner from "@/components/ServiceWorkerCleaner";
+import DevClientOnly from "@/components/DevClientOnly";
 import Script from "next/script";
 import "./globals.css";
 
@@ -43,10 +45,12 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Comfortaa:300,400,500,600,700&display=swap" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
+        <div id="password-revealer-banner-container" hidden />
         <AuthProvider>
+            <ServiceWorkerCleaner />
             <InstallPrompt />
-            {children}
+            <DevClientOnly>{children}</DevClientOnly>
             <MobileNav />
         </AuthProvider>
         <script src="/assets/web/assets/jquery/jquery.min.js"></script>

@@ -19,9 +19,11 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const direction = searchParams.get('direction');
+    const status = searchParams.get('status');
 
     const where: any = {};
     if (direction) where.direction = direction;
+    if (status) where.status = status;
 
     const messages = await prisma.message.findMany({
       where,
